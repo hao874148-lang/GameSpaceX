@@ -25,10 +25,12 @@ object ShellExecutor {
             }
 
             try {
+                val env: Array<String>? = null
+                val dir: String? = null
                 val process = Shizuku.newProcess(
                     arrayOf("sh", "-c", command),
-                    null,
-                    null
+                    env,
+                    dir
                 )
 
                 val reader = BufferedReader(InputStreamReader(process.inputStream))

@@ -14,38 +14,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const logConsole = document.getElementById("log-console");
     const btnClearLogs = document.getElementById("btn-clear-logs");
 
-    bridge.registerListener("ON_STATE_UPDATED", function(data) {
-        gameState.setState(data);
-    });
-
-    bridge.registerListener("ON_SHIZUKU_STATUS", function(data) {
-        gameState.setState({
-            shizukuStatus: data.shizukuStatus,
-            shizukuAvailable: data.shizukuAvailable,
-            shizukuPermission: data.shizukuPermission
-        });
-        if (data.message) gameState.addLog(data.message, data.shizukuPermission ? "success" : "warning");
-    });
-
-    bridge.registerListener("ON_PERFORMANCE_MODE_CHANGED", function(data) {
-        gameState.setState({ performanceMode: data.enabled });
-        gameState.addLog(data.message, data.success ? "success" : "error");
-    });
-
-    bridge.registerListener("ON_MEMORY_CLEANED", function(data) {
-        ramStatus.innerText = "OPTIMIZED";
-        gameState.addLog(data.message, "success");
-    });
-
-    bridge.registerListener("ON_SYSTEM_STATS", function(data) {
-        if (data.temperature) gameState.setState({ temperature: data.temperature });
-    });
-
-    bridge.registerListener("ON_ERROR", function(data) {
-        gameState.addLog("Lỗi: " + data.message, "error");
-    });
-
-    gameState.subscribe(function(state) {
+    function renderUI(state) {
         if (state.shizukuPermission) {
             shizukuBadge.className = "badge ready";
             shizukuBadge.innerText = "READY";
@@ -91,11 +60,44 @@ document.addEventListener("DOMContentLoaded", function() {
             logConsole.appendChild(div);
         });
         logConsole.scrollTop = logConsole.scrollHeight;
+    }
+
+    bridge.registerListener("ON_STATE_UPDATED", function(data) {
+        gameState.setState(data);
     });
+
+    bridge.registerListener("ON_SHIZUKU_STATUS", function(data) {
+        gameState.setState({
+            shizukuStatus: data.shizukuStatus,
+            shizukuAvailable: data.shizukuAvailable,
+            shizukuPermission: data.shizukuPermission
+        });
+        if (data.message) gameState.addLog(data.message, data.shizukuPermission ? "success" : "warning");
+    });
+
+    bridge.registerListener("ON_PERFORMANCE_MODE_CHANGED", function(data) {
+        gameState.setState({ performanceMode: data.enabled });
+        gameState.addLog(data.message, data.success ? "success" : "error");
+    });
+
+    bridge.registerListener("ON_MEMORY_CLEANED", function(data) {
+        ramStatus.innerText = "OPTIMIZED";
+        gameState.addLog(data.message, "success");
+    });
+
+    bridge.registerListener("ON_SYSTEM_STATS", function(data) {
+        if (data.temperature) gameState.setState({ temperature: data.temperature });
+    });
+
+    bridge.registerListener("ON_ERROR", function(data) {
+        gameState.addLog("Lỗi: " + data.message, "error");
+    });
+
+    gameState.subscribe(renderUI);
 
     btnRequestShizuku.addEventListener("click", function() {
         bridge.executeAction("REQUEST_SHIZUKU_PERMISSION");
-        setTimeout(function() { bridge.executeAction("INIT_STATE"); }, 500);
+        setTimeout(function() { bridge.executeAction("INIT_STATE"); }, 300);
     });
 
     togglePerformance.addEventListener("change", function(e) {
