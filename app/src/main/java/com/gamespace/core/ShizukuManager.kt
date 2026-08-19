@@ -13,18 +13,10 @@ object ShizukuManager {
 
     private val listeners = CopyOnWriteArrayList<StateListener>()
 
-    private val binderReceivedListener = Shizuku.OnBinderReceivedListener {
-        notifyListeners()
-    }
-
-    private val binderDeadListener = Shizuku.OnBinderDeadListener {
-        notifyListeners()
-    }
-
+    private val binderReceivedListener = Shizuku.OnBinderReceivedListener { notifyListeners() }
+    private val binderDeadListener = Shizuku.OnBinderDeadListener { notifyListeners() }
     private val permissionResultListener = Shizuku.OnRequestPermissionResultListener { requestCode, _ ->
-        if (requestCode == SHIZUKU_REQ_CODE) {
-            notifyListeners()
-        }
+        if (requestCode == SHIZUKU_REQ_CODE) notifyListeners()
     }
 
     private var isInitialized = false
@@ -55,9 +47,7 @@ object ShizukuManager {
 
     fun addListener(listener: StateListener) {
         try {
-            if (!listeners.contains(listener)) {
-                listeners.add(listener)
-            }
+            if (!listeners.contains(listener)) listeners.add(listener)
             listener.OnShizukuStateChanged(isShizukuAvailable(), hasShizukuPermission())
         } catch (t: Throwable) {
             t.printStackTrace()
@@ -83,11 +73,8 @@ object ShizukuManager {
     fun hasShizukuPermission(): Boolean {
         if (!isShizukuAvailable()) return false
         return try {
-            if (Shizuku.isPreV11()) {
-                false
-            } else {
-                Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
-            }
+            if (Shizuku.isPreV11()) false
+            else Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
         } catch (t: Throwable) {
             false
         }

@@ -29,15 +29,11 @@ class WebAppBridge(
                     BridgeEvents.REQUEST_SHIZUKU_PERMISSION.eventName -> handleRequestShizukuPermission()
                     BridgeEvents.CLEAN_MEMORY.eventName -> handleCleanMemory()
                     BridgeEvents.GET_SYSTEM_STATS.eventName -> handleGetSystemStats()
-                    else -> sendToWeb("ON_ERROR", JSONObject().apply {
-                        put("message", "Hành động $action không hỗ trợ")
-                    })
+                    else -> sendToWeb("ON_ERROR", JSONObject().apply { put("message", "Hành động $action không hỗ trợ") })
                 }
             } catch (t: Throwable) {
                 t.printStackTrace()
-                sendToWeb("ON_ERROR", JSONObject().apply {
-                    put("message", t.message ?: "Lỗi WebAppBridge")
-                })
+                sendToWeb("ON_ERROR", JSONObject().apply { put("message", t.message ?: "Lỗi WebAppBridge") })
             }
         }
     }

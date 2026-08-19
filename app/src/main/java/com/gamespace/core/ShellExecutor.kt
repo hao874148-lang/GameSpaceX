@@ -33,22 +33,12 @@ object ShellExecutor {
     suspend fun executeCommand(command: String): ShellResult = withContext(Dispatchers.IO) {
         executionMutex.withLock {
             if (!ShizukuManager.hasShizukuPermission()) {
-                return@withContext ShellResult(
-                    isSuccess = false,
-                    stdout = "",
-                    stderr = "Chưa cấp quyền Shizuku",
-                    exitCode = -1
-                )
+                return@withContext ShellResult(false, "", "Chưa cấp quyền Shizuku", -1)
             }
 
             val method = newProcessMethod
             if (method == null) {
-                return@withContext ShellResult(
-                    isSuccess = false,
-                    stdout = "",
-                    stderr = "Không tìm thấy Shizuku.newProcess",
-                    exitCode = -1
-                )
+                return@withContext ShellResult(false, "", "Không tìm thấy Shizuku.newProcess", -1)
             }
 
             try {
@@ -83,12 +73,7 @@ object ShellExecutor {
                     exitCode = exitCode
                 )
             } catch (t: Throwable) {
-                ShellResult(
-                    isSuccess = false,
-                    stdout = "",
-                    stderr = t.message ?: "Lỗi Shell",
-                    exitCode = -1
-                )
+                ShellResult(false, "", t.message ?: "Lỗi Shell", -1)
             }
         }
     }
