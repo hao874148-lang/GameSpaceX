@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="[http://schemas.android.com/apk/res/android](http://schemas.android.com/apk/res/android)"
-    xmlns:tools="[http://schemas.android.com/tools](http://schemas.android.com/tools)"
-    package="com.gamespace">
+    xmlns:tools="[http://schemas.android.com/tools](http://schemas.android.com/tools)">
 
     <!-- Cấp các quyền mạng và truy cập bộ nhớ -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -19,7 +18,7 @@
         android:theme="@android:style/Theme.Material.NoActionBar">
 
         <activity
-            android:name=".ui.MainActivity"
+            android:name="com.gamespace.ui.MainActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize|uiMode"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
