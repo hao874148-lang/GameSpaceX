@@ -1,9 +1,0 @@
-package com.gamespace.bridge
-
-enum class BridgeEvents(val eventName: String) {
-    INIT_STATE("INIT_STATE"),
-    SET_PERFORMANCE_MODE("SET_PERFORMANCE_MODE"),
-    REQUEST_SHIZUKU_PERMISSION("REQUEST_SHIZUKU_PERMISSION"),
-    GET_SYSTEM_STATS("GET_SYSTEM_STATS"),
-    CLEAN_MEMORY("CLEAN_MEMORY")
-}
