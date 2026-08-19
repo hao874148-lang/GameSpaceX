@@ -98,7 +98,6 @@ class WebAppBridge(
                 put("message", if (enable) "Đã BẬT Hiệu năng cao qua Shizuku ADB Shell!" else "Đã TẮT Chế độ Hiệu năng cao!")
             })
         } else {
-            // Mock data fallback khi chưa cấp quyền Shizuku
             sendToWeb("ON_PERFORMANCE_MODE_CHANGED", JSONObject().apply {
                 put("enabled", enable)
                 put("isMock", true)
