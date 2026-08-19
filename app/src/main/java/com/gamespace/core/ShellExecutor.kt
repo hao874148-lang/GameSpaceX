@@ -32,8 +32,8 @@ object ShellExecutor {
             ).apply {
                 isAccessible = true
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (t: Throwable) {
+            t.printStackTrace()
             null
         }
     }
@@ -54,7 +54,7 @@ object ShellExecutor {
                 return@withContext ShellResult(
                     isSuccess = false,
                     stdout = "",
-                    stderr = "Không thể tìm thấy phương thức Shizuku.newProcess",
+                    stderr = "Không tìm thấy phương thức Shizuku.newProcess",
                     exitCode = -1
                 )
             }
@@ -90,11 +90,11 @@ object ShellExecutor {
                     stderr = stderrBuilder.toString().trim(),
                     exitCode = exitCode
                 )
-            } catch (e: Exception) {
+            } catch (t: Throwable) {
                 ShellResult(
                     isSuccess = false,
                     stdout = "",
-                    stderr = e.message ?: "Lỗi không xác định khi thực thi Shell",
+                    stderr = t.message ?: "Lỗi không xác định khi thực thi Shell",
                     exitCode = -1
                 )
             }

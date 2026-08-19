@@ -22,9 +22,7 @@ class MainActivity : AppCompatActivity(), ShizukuManager.StateListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        ShizukuManager.init()
-        ShizukuManager.addListener(this)
-
+        // 1. Tạo WebView
         webView = WebView(this)
         setContentView(webView)
 
@@ -36,6 +34,7 @@ class MainActivity : AppCompatActivity(), ShizukuManager.StateListener {
             cacheMode = WebSettings.LOAD_DEFAULT
         }
 
+        // 2. Khởi tạo WebAppBridge trước
         webAppBridge = WebAppBridge(webView, lifecycleScope)
         webView.addJavascriptInterface(webAppBridge, "AndroidNativeBridge")
 
@@ -49,20 +48,37 @@ class MainActivity : AppCompatActivity(), ShizukuManager.StateListener {
             }
         }
 
+        // 3. Khởi tạo Shizuku sau khi Bridge đã sẵn sàng
+        try {
+            ShizukuManager.init()
+            ShizukuManager.addListener(this)
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
+
+        // 4. Load trang Web
         webView.loadUrl("file:///android_asset/index.html")
     }
 
     override fun OnShizukuStateChanged(isAvailable: Boolean, hasPermission: Boolean) {
         runOnUiThread {
-            if (::webAppBridge.isInitialized) {
-                webAppBridge.notifyShizukuState(isAvailable, hasPermission)
+            try {
+                if (::webAppBridge.isInitialized) {
+                    webAppBridge.notifyShizukuState(isAvailable, hasPermission)
+                }
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        ShizukuManager.removeListener(this)
-        ShizukuManager.destroy()
+        try {
+            ShizukuManager.removeListener(this)
+            ShizukuManager.destroy()
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
     }
 }
