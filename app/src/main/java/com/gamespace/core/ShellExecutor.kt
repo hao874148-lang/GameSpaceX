@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.lang.reflect.Method
 
 data class ShellResult(
     val isSuccess: Boolean,
@@ -16,10 +17,26 @@ data class ShellResult(
 )
 
 /**
- * Bộ thực thi lệnh Shell ADB tuần tự (xếp hàng chờ) để tránh xung đột lệnh.
+ * Bộ thực thi lệnh Shell ADB tuần tự thông qua Reflection Shizuku.
  */
 object ShellExecutor {
     private val executionMutex = Mutex()
+
+    private val newProcessMethod: Method? by lazy {
+        try {
+            Shizuku::class.java.getDeclaredMethod(
+                "newProcess",
+                Array<String>::class.java,
+                Array<String>::class.java,
+                String::class.java
+            ).apply {
+                isAccessible = true
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
 
     suspend fun executeCommand(command: String): ShellResult = withContext(Dispatchers.IO) {
         executionMutex.withLock {
@@ -32,8 +49,24 @@ object ShellExecutor {
                 )
             }
 
+            val method = newProcessMethod
+            if (method == null) {
+                return@withContext ShellResult(
+                    isSuccess = false,
+                    stdout = "",
+                    stderr = "Không thể tìm thấy phương thức Shizuku.newProcess",
+                    exitCode = -1
+                )
+            }
+
             try {
-                val process = Shizuku.newProcess(arrayOf("sh", "-c", command), null, null)
+                val process = method.invoke(
+                    null,
+                    arrayOf("sh", "-c", command),
+                    null,
+                    null
+                ) as Process
+
                 val reader = BufferedReader(InputStreamReader(process.inputStream))
                 val errorReader = BufferedReader(InputStreamReader(process.errorStream))
 
