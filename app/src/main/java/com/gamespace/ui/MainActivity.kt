@@ -20,8 +20,6 @@ class MainActivity : AppCompatActivity(), ShizukuManager.StateListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        WebView.setWebContentsDebuggingEnabled(true)
-
         webView = WebView(this)
         setContentView(webView)
 
@@ -58,7 +56,12 @@ class MainActivity : AppCompatActivity(), ShizukuManager.StateListener {
         webView.loadUrl("file:///android_asset/index.html")
     }
 
-    override fun onShizukuStateChanged(isAvailable: Boolean, hasPermission: Boolean) {
+    override fun onResume() {
+        super.onResume()
+        notifyShizukuState()
+    }
+
+    override fun OnShizukuStateChanged(isAvailable: Boolean, hasPermission: Boolean) {
         runOnUiThread {
             notifyShizukuState()
         }

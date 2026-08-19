@@ -50,14 +50,23 @@ document.addEventListener("DOMContentLoaded", function() {
             shizukuBadge.className = "badge ready";
             shizukuBadge.innerText = "READY";
             shizukuDetail.innerText = "Đã kết nối và sẵn sàng thực thi ADB Shell.";
+            btnRequestShizuku.innerText = "ĐÃ ĐƯỢC CẤP QUYỀN";
+            btnRequestShizuku.disabled = true;
+            btnRequestShizuku.style.opacity = "0.6";
         } else if (state.shizukuAvailable) {
             shizukuBadge.className = "badge warning";
             shizukuBadge.innerText = "CHƯA CẤP QUYỀN";
             shizukuDetail.innerText = "Dịch vụ đang chạy, hãy bấm CẤP QUYỀN.";
+            btnRequestShizuku.innerText = "CẤP QUYỀN SHIZUKU";
+            btnRequestShizuku.disabled = false;
+            btnRequestShizuku.style.opacity = "1";
         } else {
             shizukuBadge.className = "badge danger";
             shizukuBadge.innerText = "NGẮT KẾT NỐI";
             shizukuDetail.innerText = "Chưa bật Shizuku trên thiết bị.";
+            btnRequestShizuku.innerText = "CẤP QUYỀN SHIZUKU";
+            btnRequestShizuku.disabled = false;
+            btnRequestShizuku.style.opacity = "1";
         }
 
         togglePerformance.checked = state.performanceMode;
@@ -86,6 +95,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     btnRequestShizuku.addEventListener("click", function() {
         bridge.executeAction("REQUEST_SHIZUKU_PERMISSION");
+        setTimeout(function() { bridge.executeAction("INIT_STATE"); }, 500);
     });
 
     togglePerformance.addEventListener("change", function(e) {
@@ -101,6 +111,9 @@ document.addEventListener("DOMContentLoaded", function() {
         gameState.setState({ logs: [] });
     });
 
-    setTimeout(function() { bridge.executeAction("INIT_STATE"); }, 200);
-    setInterval(function() { bridge.executeAction("GET_SYSTEM_STATS"); }, 5000);
+    setTimeout(function() { bridge.executeAction("INIT_STATE"); }, 100);
+    setInterval(function() { 
+        bridge.executeAction("GET_SYSTEM_STATS"); 
+        bridge.executeAction("INIT_STATE");
+    }, 2000);
 });
