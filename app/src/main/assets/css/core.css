@@ -1,0 +1,28 @@
+:root {
+  --bg-primary: #0a0c10;
+  --bg-card: rgba(20, 24, 33, 0.75);
+  --accent-red: #ff0055;
+  --accent-cyan: #00f0ff;
+  --accent-green: #00ff88;
+  --text-main: #f0f4f8;
+  --text-muted: #8a99ad;
+  --border-color: rgba(255, 0, 85, 0.3);
+  --font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  font-family: var(--font-family);
+  overflow-x: hidden;
+  width: 100vw;
+  height: 100vh;
+}

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GameSpaceX Control Center</title>
+  <link rel="stylesheet" href="css/core.css">
+  <link rel="stylesheet" href="css/theme.css">
+</head>
+<body>
+
+  <div class="cyber-container">
+    <header class="cyber-header">
+      <div class="brand-title">GAME SPACEX</div>
+      <div class="status-badge">ONLINE</div>
+    </header>
+
+    <div class="card-grid">
+      <div class="cyber-card">
+        <span class="card-label">CHẾ ĐỘ</span>
+        <span class="card-value" id="modeStatus">BALANCED</span>
+      </div>
+      <div class="cyber-card">
+        <span class="card-label">SHIZUKU</span>
+        <span class="card-value" style="color: var(--accent-green);">SẴN SÀNG</span>
+      </div>
+      <div class="cyber-card">
+        <span class="card-label">BỘ NHỚ</span>
+        <span class="card-value">OPTIMIZED</span>
+      </div>
+      <div class="cyber-card">
+        <span class="card-label">NHIỆT ĐỘ</span>
+        <span class="card-value" style="color: var(--accent-cyan);">36.5 °C</span>
+      </div>
+    </div>
+
+    <button id="boostBtn" class="cyber-button">BẬT CHẾ ĐỘ HIỆU NĂNG CAO</button>
+  </div>
+
+  <script src="js/bridge.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
