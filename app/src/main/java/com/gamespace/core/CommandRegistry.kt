@@ -1,8 +1,5 @@
 package com.gamespace.core
 
-/**
- * Danh mục lưu trữ các câu lệnh ADB Shell tối ưu hệ thống.
- */
 object CommandRegistry {
     val PERFORMANCE_MODE_ON = listOf(
         "cmd power set-mode 0",

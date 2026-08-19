@@ -16,9 +16,6 @@ data class ShellResult(
     val exitCode: Int
 )
 
-/**
- * Bộ thực thi lệnh Shell ADB tuần tự thông qua Reflection Shizuku.
- */
 object ShellExecutor {
     private val executionMutex = Mutex()
 
@@ -44,7 +41,7 @@ object ShellExecutor {
                 return@withContext ShellResult(
                     isSuccess = false,
                     stdout = "",
-                    stderr = "Chưa cấp quyền Shizuku hoặc dịch vụ bị ngắt",
+                    stderr = "Chưa cấp quyền Shizuku",
                     exitCode = -1
                 )
             }
@@ -54,7 +51,7 @@ object ShellExecutor {
                 return@withContext ShellResult(
                     isSuccess = false,
                     stdout = "",
-                    stderr = "Không tìm thấy phương thức Shizuku.newProcess",
+                    stderr = "Không tìm thấy Shizuku.newProcess",
                     exitCode = -1
                 )
             }
@@ -94,7 +91,7 @@ object ShellExecutor {
                 ShellResult(
                     isSuccess = false,
                     stdout = "",
-                    stderr = t.message ?: "Lỗi không xác định khi thực thi Shell",
+                    stderr = t.message ?: "Lỗi Shell",
                     exitCode = -1
                 )
             }

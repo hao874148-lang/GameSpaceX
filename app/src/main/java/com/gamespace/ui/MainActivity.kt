@@ -10,13 +10,10 @@ import androidx.lifecycle.lifecycleScope
 import com.gamespace.bridge.WebAppBridge
 import com.gamespace.core.ShizukuManager
 
-/**
- * Activity chính khởi tạo WebView và liên kết với ShizukuManager.
- */
 class MainActivity : AppCompatActivity(), ShizukuManager.StateListener {
 
     private lateinit var webView: WebView
-    private lateinit var webAppBridge: WebAppBridge
+    private var webAppBridge: WebAppBridge? = null
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,16 +30,14 @@ class MainActivity : AppCompatActivity(), ShizukuManager.StateListener {
             cacheMode = WebSettings.LOAD_DEFAULT
         }
 
-        webAppBridge = WebAppBridge(webView, lifecycleScope)
-        webView.addJavascriptInterface(webAppBridge, "AndroidNativeBridge")
+        val bridge = WebAppBridge(webView, lifecycleScope)
+        webAppBridge = bridge
+        webView.addJavascriptInterface(bridge, "AndroidNativeBridge")
 
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                OnShizukuStateChanged(
-                    ShizukuManager.isShizukuAvailable(),
-                    ShizukuManager.hasShizukuPermission()
-                )
+                notifyShizukuState()
             }
         }
 
@@ -58,13 +53,17 @@ class MainActivity : AppCompatActivity(), ShizukuManager.StateListener {
 
     override fun OnShizukuStateChanged(isAvailable: Boolean, hasPermission: Boolean) {
         runOnUiThread {
-            try {
-                if (::webAppBridge.isInitialized) {
-                    webAppBridge.notifyShizukuState(isAvailable, hasPermission)
-                }
-            } catch (t: Throwable) {
-                t.printStackTrace()
-            }
+            notifyShizukuState()
+        }
+    }
+
+    private fun notifyShizukuState() {
+        try {
+            val available = ShizukuManager.isShizukuAvailable()
+            val permitted = ShizukuManager.hasShizukuPermission()
+            webAppBridge?.notifyShizukuState(available, permitted)
+        } catch (t: Throwable) {
+            t.printStackTrace()
         }
     }
 

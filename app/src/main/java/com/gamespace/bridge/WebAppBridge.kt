@@ -12,9 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
-/**
- * Cầu nối giao tiếp giữa WebView và Kotlin Native.
- */
 class WebAppBridge(
     private val webView: WebView,
     private val coroutineScope: CoroutineScope
@@ -33,26 +30,26 @@ class WebAppBridge(
                     BridgeEvents.CLEAN_MEMORY.eventName -> handleCleanMemory()
                     BridgeEvents.GET_SYSTEM_STATS.eventName -> handleGetSystemStats()
                     else -> sendToWeb("ON_ERROR", JSONObject().apply {
-                        put("message", "Hành động $action không được hỗ trợ!")
+                        put("message", "Hành động $action không hỗ trợ")
                     })
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (t: Throwable) {
+                t.printStackTrace()
                 sendToWeb("ON_ERROR", JSONObject().apply {
-                    put("message", e.message ?: "Lỗi không xác định tại WebAppBridge")
+                    put("message", t.message ?: "Lỗi WebAppBridge")
                 })
             }
         }
     }
 
     private fun handleInitState() {
-        val isShizukuAvailable = ShizukuManager.isShizukuAvailable()
+        val isAvailable = ShizukuManager.isShizukuAvailable()
         val hasPermission = ShizukuManager.hasShizukuPermission()
 
         val response = JSONObject().apply {
-            put("shizukuAvailable", isShizukuAvailable)
+            put("shizukuAvailable", isAvailable)
             put("shizukuPermission", hasPermission)
-            put("shizukuStatus", if (hasPermission) "READY" else if (isShizukuAvailable) "NEED_PERMISSION" else "DISCONNECTED")
+            put("shizukuStatus", if (hasPermission) "READY" else if (isAvailable) "NEED_PERMISSION" else "DISCONNECTED")
             put("performanceMode", false)
             put("memoryStatus", "OPTIMIZED")
             put("temperature", 36.5)
@@ -64,7 +61,7 @@ class WebAppBridge(
         if (!ShizukuManager.isShizukuAvailable()) {
             sendToWeb("ON_SHIZUKU_STATUS", JSONObject().apply {
                 put("status", "DISCONNECTED")
-                put("message", "Dịch vụ Shizuku chưa khởi chạy!")
+                put("message", "Shizuku chưa chạy")
             })
             return
         }
@@ -72,7 +69,7 @@ class WebAppBridge(
         if (ShizukuManager.hasShizukuPermission()) {
             sendToWeb("ON_SHIZUKU_STATUS", JSONObject().apply {
                 put("status", "READY")
-                put("message", "Đã có quyền Shizuku!")
+                put("message", "Đã có quyền Shizuku")
             })
             return
         }
@@ -95,14 +92,14 @@ class WebAppBridge(
                 put("enabled", enable)
                 put("isMock", false)
                 put("success", success)
-                put("message", if (enable) "Đã BẬT Hiệu năng cao qua Shizuku ADB Shell!" else "Đã TẮT Chế độ Hiệu năng cao!")
+                put("message", if (enable) "Đã BẬT Hiệu năng cao qua ADB Shell" else "Đã TẮT Chế độ Hiệu năng cao")
             })
         } else {
             sendToWeb("ON_PERFORMANCE_MODE_CHANGED", JSONObject().apply {
                 put("enabled", enable)
                 put("isMock", true)
                 put("success", true)
-                put("message", if (enable) "Đã BẬT Chế độ Hiệu năng cao (Giả lập Mock)" else "Đã TẮT Chế độ Hiệu năng cao (Giả lập Mock)")
+                put("message", if (enable) "Đã BẬT Hiệu năng cao (Giả lập)" else "Đã TẮT Hiệu năng cao (Giả lập)")
             })
         }
     }
@@ -114,19 +111,19 @@ class WebAppBridge(
             sendToWeb("ON_MEMORY_CLEANED", JSONObject().apply {
                 put("success", true)
                 put("isMock", false)
-                put("message", "Đã giải phóng bộ nhớ RAM bằng ADB Shell!")
+                put("message", "Đã dọn RAM bằng ADB Shell")
             })
         } else {
             sendToWeb("ON_MEMORY_CLEANED", JSONObject().apply {
                 put("success", true)
                 put("isMock", true)
-                put("message", "Đã dọn dẹp bộ nhớ RAM (Giả lập Mock)!")
+                put("message", "Đã dọn RAM (Giả lập)")
             })
         }
     }
 
     private suspend fun handleGetSystemStats() {
-        var tempVal = 37.2
+        var tempVal = 36.5
         val hasShizuku = ShizukuManager.hasShizukuPermission()
 
         if (hasShizuku) {
@@ -135,7 +132,7 @@ class WebAppBridge(
                 try {
                     val raw = res.stdout.trim().toDouble()
                     tempVal = if (raw > 1000) raw / 1000.0 else raw
-                } catch (_: Exception) {}
+                } catch (_: Throwable) {}
             }
         }
 

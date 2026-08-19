@@ -1,4 +1,3 @@
-/* REDMAGIC CYBER THEME STYLES */
 .app-container {
     padding: 16px;
     display: flex;
@@ -8,7 +7,6 @@
     margin: 0 auto;
 }
 
-/* HEADER */
 .cyber-header {
     display: flex;
     justify-content: space-between;
@@ -17,7 +15,6 @@
     background: var(--bg-card);
     border: 1px solid var(--bg-card-border);
     border-radius: var(--radius-md);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 .logo-text {
@@ -31,7 +28,7 @@
 
 .version-tag {
     font-size: 0.65rem;
-    color: var(--text-dim);
+    color: var(--text-secondary);
     margin-left: 6px;
 }
 
@@ -52,7 +49,6 @@
     box-shadow: 0 0 8px var(--color-accent-green);
 }
 
-/* CARDS */
 .dashboard-content {
     display: flex;
     flex-direction: column;
@@ -61,15 +57,13 @@
 
 .cyber-card {
     background: var(--bg-card);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-md);
     padding: 16px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    backdrop-filter: blur(8px);
 }
 
 .highlight-card {
-    border-color: rgba(0, 240, 255, 0.3);
+    border-color: rgba(0, 240, 255, 0.4);
 }
 
 .card-header {
@@ -83,10 +77,8 @@
     font-size: 0.85rem;
     font-weight: 700;
     color: var(--text-secondary);
-    letter-spacing: 1px;
 }
 
-/* BADGES */
 .badge {
     padding: 4px 8px;
     border-radius: 4px;
@@ -114,7 +106,6 @@
     border: 1px solid var(--color-accent-red);
 }
 
-/* BUTTONS */
 .cyber-btn {
     width: 100%;
     padding: 10px;
@@ -123,20 +114,13 @@
     border-radius: var(--radius-sm);
     font-weight: bold;
     font-size: 0.8rem;
-    letter-spacing: 1px;
     cursor: pointer;
-    transition: var(--transition-fast);
 }
 
 .btn-secondary {
-    background: rgba(0, 240, 255, 0.1);
+    background: rgba(0, 240, 255, 0.15);
     color: var(--color-accent-cyan);
     border: 1px solid var(--color-accent-cyan);
-}
-
-.btn-secondary:active {
-    background: var(--color-accent-cyan);
-    color: #000;
 }
 
 .btn-action {
@@ -148,12 +132,11 @@
 .btn-text {
     background: none;
     border: none;
-    color: var(--text-dim);
+    color: var(--text-secondary);
     font-size: 0.75rem;
     cursor: pointer;
 }
 
-/* TOGGLE SWITCH */
 .toggle-container {
     display: flex;
     justify-content: space-between;
@@ -184,8 +167,8 @@
     cursor: pointer;
     top: 0; left: 0; right: 0; bottom: 0;
     background-color: #1e293b;
-    transition: .3s;
     border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 34px;
 }
 
 .slider:before {
@@ -196,27 +179,18 @@
     left: 3px;
     bottom: 3px;
     background-color: white;
+    border-radius: 50%;
     transition: .3s;
 }
 
 input:checked + .slider {
     background-color: var(--color-accent-red);
-    box-shadow: 0 0 12px var(--color-accent-red);
 }
 
 input:checked + .slider:before {
     transform: translateX(24px);
 }
 
-.slider.round {
-    border-radius: 34px;
-}
-
-.slider.round:before {
-    border-radius: 50%;
-}
-
-/* MINI METRICS GRID */
 .cyber-card-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -253,13 +227,8 @@ input:checked + .slider:before {
     transition: width 0.4s ease;
 }
 
-/* LOG CONSOLE */
-.log-card {
-    padding: 12px;
-}
-
 .log-console {
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
     border-radius: var(--radius-sm);
     padding: 8px;
     height: 110px;

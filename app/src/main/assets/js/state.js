@@ -1,6 +1,3 @@
-/**
- * Lưu trữ trạng thái UI và bắn sự kiện khi state thay đổi.
- */
 window.GameState = (function() {
     let state = {
         shizukuStatus: 'DISCONNECTED',
@@ -14,9 +11,7 @@ window.GameState = (function() {
 
     const listeners = [];
 
-    function getState() {
-        return { ...state };
-    }
+    function getState() { return { ...state }; }
 
     function setState(newState) {
         state = { ...state, ...newState };
@@ -25,20 +20,12 @@ window.GameState = (function() {
 
     function addLog(message, type = 'info') {
         const timestamp = new Date().toLocaleTimeString();
-        const logItem = { timestamp, message, type };
-        state.logs.push(logItem);
+        state.logs.push({ timestamp, message, type });
         if (state.logs.length > 30) state.logs.shift();
         setState({ logs: state.logs });
     }
 
-    function subscribe(callback) {
-        listeners.push(callback);
-    }
+    function subscribe(callback) { listeners.push(callback); }
 
-    return {
-        getState: getState,
-        setState: setState,
-        addLog: addLog,
-        subscribe: subscribe
-    };
+    return { getState, setState, addLog, subscribe };
 })();

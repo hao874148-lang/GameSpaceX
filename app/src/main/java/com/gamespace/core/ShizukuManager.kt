@@ -2,54 +2,116 @@ package com.gamespace.core
 
 import android.content.pm.PackageManager
 import rikka.shizuku.Shizuku
+import java.util.concurrent.CopyOnWriteArrayList
 
 object ShizukuManager {
+    const val SHIZUKU_REQ_CODE = 1001
 
-    private var isBinderReceived = false
+    interface StateListener {
+        fun OnShizukuStateChanged(isAvailable: Boolean, hasPermission: Boolean)
+    }
+
+    private val listeners = CopyOnWriteArrayList<StateListener>()
 
     private val binderReceivedListener = Shizuku.OnBinderReceivedListener {
-        isBinderReceived = true
+        notifyListeners()
     }
 
     private val binderDeadListener = Shizuku.OnBinderDeadListener {
-        isBinderReceived = false
+        notifyListeners()
     }
 
+    private val permissionResultListener = Shizuku.OnRequestPermissionResultListener { requestCode, _ ->
+        if (requestCode == SHIZUKU_REQ_CODE) {
+            notifyListeners()
+        }
+    }
+
+    private var isInitialized = false
+
     fun init() {
+        if (isInitialized) return
         try {
             Shizuku.addBinderReceivedListenerSticky(binderReceivedListener)
             Shizuku.addBinderDeadListener(binderDeadListener)
-        } catch (e: Exception) {
-            e.printStackTrace()
+            Shizuku.addRequestPermissionResultListener(permissionResultListener)
+            isInitialized = true
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
+    }
+
+    fun destroy() {
+        if (!isInitialized) return
+        try {
+            Shizuku.removeBinderReceivedListener(binderReceivedListener)
+            Shizuku.removeBinderDeadListener(binderDeadListener)
+            Shizuku.removeRequestPermissionResultListener(permissionResultListener)
+            isInitialized = false
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
+    }
+
+    fun addListener(listener: StateListener) {
+        try {
+            if (!listeners.contains(listener)) {
+                listeners.add(listener)
+            }
+            listener.OnShizukuStateChanged(isShizukuAvailable(), hasShizukuPermission())
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
+    }
+
+    fun removeListener(listener: StateListener) {
+        try {
+            listeners.remove(listener)
+        } catch (t: Throwable) {
+            t.printStackTrace()
         }
     }
 
     fun isShizukuAvailable(): Boolean {
         return try {
             Shizuku.pingBinder()
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             false
         }
     }
 
-    fun hasPermission(): Boolean {
-        return if (isShizukuAvailable()) {
-            try {
-                Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
-            } catch (e: Exception) {
+    fun hasShizukuPermission(): Boolean {
+        if (!isShizukuAvailable()) return false
+        return try {
+            if (Shizuku.isPreV11()) {
                 false
+            } else {
+                Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
             }
-        } else {
+        } catch (t: Throwable) {
             false
         }
     }
 
-    fun requestPermission(requestCode: Int = 1001) {
-        if (isShizukuAvailable() && !hasPermission()) {
+    fun requestPermission() {
+        if (!isShizukuAvailable()) return
+        try {
+            if (!Shizuku.isPreV11() && !hasShizukuPermission()) {
+                Shizuku.requestPermission(SHIZUKU_REQ_CODE)
+            }
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
+    }
+
+    private fun notifyListeners() {
+        val available = isShizukuAvailable()
+        val permitted = hasShizukuPermission()
+        for (listener in listeners) {
             try {
-                Shizuku.requestPermission(requestCode)
-            } catch (e: Exception) {
-                e.printStackTrace()
+                listener.OnShizukuStateChanged(available, permitted)
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
         }
     }
