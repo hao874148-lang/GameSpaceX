@@ -21,14 +21,9 @@ object ShellExecutor {
 
     private val newProcessMethod: Method? by lazy {
         try {
-            Shizuku::class.java.getDeclaredMethod(
-                "newProcess",
-                Array<String>::class.java,
-                Array<String>::class.java,
-                String::class.java
-            ).apply {
-                isAccessible = true
-            }
+            Shizuku::class.java.declaredMethods
+                .firstOrNull { it.name == "newProcess" }
+                ?.apply { isAccessible = true }
         } catch (t: Throwable) {
             t.printStackTrace()
             null
