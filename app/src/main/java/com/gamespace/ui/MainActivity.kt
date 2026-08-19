@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity(), ShizukuManager.StateListener {
         webView.loadUrl("file:///android_asset/index.html")
     }
 
-    override fun OnShizukuStateChanged(isAvailable: Boolean, hasPermission: Boolean) {
+    override fun onShizukuStateChanged(isAvailable: Boolean, hasPermission: Boolean) {
         runOnUiThread {
             notifyShizukuState()
         }
