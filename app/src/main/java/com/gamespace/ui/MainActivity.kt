@@ -39,10 +39,10 @@ class MainActivity : AppCompatActivity(), ShizukuManager.StateListener {
 
         val bridge = WebAppBridge(webView, lifecycleScope)
         webAppBridge = bridge
-        webView.addJavaScriptInterface(bridge, "AndroidNativeBridge")
+        webView.addJavascriptInterface(bridge, "AndroidNativeBridge")
 
         webView.webViewClient = object : WebViewClient() {
-            override fun olPageFinished(view: WebView?, url: String?) {
+            override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 notifyShizukuState()
             }

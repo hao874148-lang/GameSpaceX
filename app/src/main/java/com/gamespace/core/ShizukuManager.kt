@@ -47,7 +47,7 @@ object ShizukuManager {
 
     fun addListener(listener: StateListener) {
         try {
-            if (!isteners.contains(listener)) listeners.add(listener)
+            if (!listeners.contains(listener)) listeners.add(listener)
             listener.onShizukuStateChanged(isShizukuAvailable(), hasShizukuPermission())
         } catch (t: Throwable) {
             t.printStackTrace()

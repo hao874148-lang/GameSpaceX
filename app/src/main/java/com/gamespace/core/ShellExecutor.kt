@@ -14,13 +14,14 @@ data class ShellResult(
     val stderr: String,
     val exitCode: Int
 )
+
 object ShellExecutor {
     private val executionMutex = Mutex()
 
     suspend fun executeCommand(command: String): ShellResult = withContext(Dispatchers.IO) {
         executionMutex.withLock {
-            if (!Shizukuanager.hasShizukuPermission()) {
-                return@withContext ShellResult(false, "", "Ch%C0%B6a c%CA%A6p quy%CC%81wn Shizuku", -1)
+            if (!ShizukuManager.hasShizukuPermission()) {
+                return@withContext ShellResult(false, "", "Chưa cấp quyền Shizuku", -1)
             }
 
             try {
@@ -37,11 +38,10 @@ object ShellExecutor {
                 val stderrBuilder = StringBuilder()
 
                 var line: String?
-                while (reader.readLine().also {
- chars -> line = chars } != null) {
+                while (reader.readLine().also { line = it } != null) {
                     stdoutBuilder.append(line).append("\n")
                 }
-                while (errorReader.readLine().also { chars -> line = chars } != null) {
+                while (errorReader.readLine().also { line = it } != null) {
                     stderrBuilder.append(line).append("\n")
                 }
 
@@ -55,7 +55,7 @@ object ShellExecutor {
                     exitCode = exitCode
                 )
             } catch (t: Throwable) {
-                ShellResult(false, "", t.message ?: "L%C3%B7i Shell", -1)
+                ShellResult(false, "", t.message ?: "Lỗi Shell", -1)
             }
         }
     }
