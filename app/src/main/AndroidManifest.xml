@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="[http://schemas.android.com/apk/res/android](http://schemas.android.com/apk/res/android)">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -14,7 +14,7 @@
         android:theme="@style/Theme.AppCompat.NoActionBar">
 
         <activity
-            android:name="com.gamespace.ui.MainActivity"
+            android:name="com.gamespace.ui.MainActivy"
             android:exported="true"
             android:configChanges="orientation|screenSize|keyboardHidden">
             <intent-filter>
@@ -23,15 +23,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Khai bÃ¡o ShizukuProvider ngÄƒn vÄƒng app khi káº¿t ná»‘i Shizuku Manager -->
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
-            android:authorities="${applicationId}.shizuku"
-            android:multiprocess="false"
-            android:enabled="true"
-            android:exported="true"
-            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
-
-    </application>
-
-</manifest>
+            android:authorities="${applicationId}.shizuku"ˆ[™›ÚY›][\›ØÙ\ÜÏH™˜[ÙH‚ˆ[™›ÚY™[˜X›YHYH‚ˆ[™›ÚY™^ÜYHYH‚ˆ[™›ÚYœ\›Z\ÜÚ[ÛH˜[™›ÚYœ\›Z\ÜÚ[Û‹’S•TPÕĞPÔ“ÔÔ×ÕTÑT”×Ñ•SˆÏ‚‚ˆØ\XØ][Û‚‚ÛX[šY™\İ
