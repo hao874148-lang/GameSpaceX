@@ -8,13 +8,13 @@ import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
 
     private lateinit var webView: WebView
 
@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
         // 1. Cấu hình giao diện tràn màn hình Cyber Fullscreen (Edge-to-Edge)
         setupFullscreenMode()
 
-        // 2. Khởi tạo WebView container trực tiếp bằng Kotlin (Không dùng tệp XML phụ)
+        // 2. Khởi tạo WebView container trực tiếp bằng Kotlin
         webView = WebView(this).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
