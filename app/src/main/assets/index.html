@@ -1,51 +1,100 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GameSpaceX</title>
-  <link rel="stylesheet" href="css/core.css">
-  <link rel="stylesheet" href="css/theme.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GameSpaceX Cyber Panel</title>
+    <link rel="stylesheet" href="css/core.css">
+    <link rel="stylesheet" href="css/theme.css">
 </head>
 <body>
-  <div class="app-container">
-    <header class="header">
-      <div class="title-group">
-        <h1 class="logo-text">GAME <span class="highlight">SPACEX</span></h1>
-      </div>
-      <div class="status-badge online">ONLINE</div>
-    </header>
+    <div class="app-container">
+        <!-- HEADER PANE -->
+        <header class="cyber-header">
+            <div class="logo-box">
+                <span class="logo-text">GAME SPACEX</span>
+                <span class="version-tag">v1.0-DAY06</span>
+            </div>
+            <div class="connection-status" id="connection-status">
+                <span class="status-dot"></span>
+                <span id="network-text">ONLINE</span>
+            </div>
+        </header>
 
-    <main class="content">
-      <div class="grid-container">
-        <div class="card">
-          <span class="card-label">CHẾ ĐỘ</span>
-          <span class="card-value cyan" id="txt-mode">BALANCED</span>
-        </div>
-        <div class="card">
-          <span class="card-label">SHIZUKU</span>
-          <span class="card-value green" id="txt-shizuku">SẴN SÀNG</span>
-        </div>
-        <div class="card">
-          <span class="card-label">BỘ NHỚ</span>
-          <span class="card-value cyan" id="txt-memory">OPTIMIZED</span>
-        </div>
-        <div class="card">
-          <span class="card-label">NHIỆT ĐỘ</span>
-          <span class="card-value cyan" id="txt-temp">36.5 °C</span>
-        </div>
-      </div>
+        <!-- DASHBOARD GRID -->
+        <main class="dashboard-content">
 
-      <div class="action-section">
-        <button id="btn-performance" class="btn-primary">
-          BẬT CHẾ ĐỘ HIỆU NĂNG CAO
-        </button>
-      </div>
-    </main>
-  </div>
+            <!-- SHIZUKU STATUS CARD -->
+            <section class="cyber-card highlight-card">
+                <div class="card-header">
+                    <span class="card-title">TRẠNG THÁI SHIZUKU</span>
+                    <span class="badge" id="shizuku-badge">KIỂM TRA...</span>
+                </div>
+                <div class="card-body">
+                    <div class="status-info-row">
+                        <span>Dịch vụ ADB:</span>
+                        <strong id="shizuku-detail">Đang quét Binder...</strong>
+                    </div>
+                    <button class="cyber-btn btn-secondary" id="btn-request-shizuku">
+                        CẤP QUYỀN SHIZUKU
+                    </button>
+                </div>
+            </section>
 
-  <script src="js/bridge.js"></script>
-  <script src="js/state.js"></script>
-  <script src="js/app.js"></script>
+            <!-- PERFORMANCE SWITCH CARD -->
+            <section class="cyber-card">
+                <div class="card-header">
+                    <span class="card-title">HIỆU NĂNG HỆ THỐNG</span>
+                    <span class="mode-indicator" id="mode-text">BALANCED</span>
+                </div>
+                <div class="card-body">
+                    <div class="toggle-container">
+                        <div class="toggle-info">
+                            <strong>Chế độ Chơi Game Cực Hạn</strong>
+                            <p>Tối ưu CPU Governor, vô hiệu hóa throttling</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-performance">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- HARDWARE MONITORS -->
+            <section class="cyber-card-grid">
+                <div class="cyber-card mini-card">
+                    <span class="mini-title">NHIỆT ĐỘ CPU</span>
+                    <div class="metric-value" id="temp-value">36.5 °C</div>
+                    <div class="metric-bar-bg">
+                        <div class="metric-bar-fill" id="temp-bar" style="width: 45%;"></div>
+                    </div>
+                </div>
+
+                <div class="cyber-card mini-card">
+                    <span class="mini-title">BỘ NHỚ RAM</span>
+                    <div class="metric-value" id="ram-status">OPTIMIZED</div>
+                    <button class="cyber-btn btn-action" id="btn-clean-ram">DỌN RAM</button>
+                </div>
+            </section>
+
+            <!-- SYSTEM LOG MONITOR -->
+            <section class="cyber-card log-card">
+                <div class="card-header">
+                    <span class="card-title">NHẬT KÝ HỆ THỐNG</span>
+                    <button class="btn-text" id="btn-clear-logs">XÓA</button>
+                </div>
+                <div class="log-console" id="log-console">
+                    <div class="log-item info">[SYS] Đã khởi tạo giao diện RedMagic WebApp.</div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script src="js/bridge.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>

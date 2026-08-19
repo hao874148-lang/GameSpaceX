@@ -1,56 +1,37 @@
-const Bridge = {
-  callbacks: {},
+/**
+ * Cầu nối JS gửi nhận lệnh với Android Native Bridge.
+ */
+window.GameSpaceBridge = (function() {
+    const listeners = {};
 
-  executeAction: function (action, payload = {}, callback = null) {
-    const requestId = 'req_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-
-    if (callback) {
-      this.callbacks[requestId] = callback;
+    function registerListener(event, callback) {
+        if (!listeners[event]) {
+            listeners[event] = [];
+        }
+        listeners[event].push(callback);
     }
 
-    const requestData = {
-      requestId: requestId,
-      action: action,
-      payload: payload
+    function executeAction(action, payload = {}) {
+        const jsonPayload = JSON.stringify(payload);
+        if (window.AndroidNativeBridge && typeof window.AndroidNativeBridge.executeAction === 'function') {
+            window.AndroidNativeBridge.executeAction(action, jsonPayload);
+        } else {
+            console.warn("[Bridge Web] AndroidNativeBridge không tồn tại, giả lập Web mode:", action);
+            setTimeout(() => {
+                onNativeEvent("ON_ERROR", { message: "Đang chạy chế độ trình duyệt thử nghiệm (No Native)" });
+            }, 300);
+        }
+    }
+
+    function onNativeEvent(event, data) {
+        if (listeners[event]) {
+            listeners[event].forEach(cb => cb(data));
+        }
+    }
+
+    return {
+        registerListener: registerListener,
+        executeAction: executeAction,
+        onNativeEvent: onNativeEvent
     };
-
-    const jsonString = JSON.stringify(requestData);
-
-    if (window.AndroidBridge && typeof window.AndroidBridge.postMessage === 'function') {
-      window.AndroidBridge.postMessage(jsonString);
-    } else {
-      console.warn('[Bridge] AndroidBridge không khả dụng. Sử dụng chế độ Mock data.');
-      setTimeout(() => {
-        this.handleNativeResponse(JSON.stringify({
-          requestId: requestId,
-          action: action,
-          success: true,
-          message: 'Phản hồi giả lập (Chạy trên Trình duyệt Web)',
-          data: payload
-        }));
-      }, 300);
-    }
-  },
-
-  handleNativeResponse: function (jsonResponseString) {
-    try {
-      const response = typeof jsonResponseString === 'string' ? JSON.parse(jsonResponseString) : jsonResponseString;
-      const requestId = response.requestId;
-
-      if (requestId && this.callbacks[requestId]) {
-        this.callbacks[requestId](response);
-        delete this.callbacks[requestId];
-      }
-
-      const event = new CustomEvent('nativeResponse', { detail: response });
-      window.dispatchEvent(event);
-
-    } catch (err) {
-      console.error('[Bridge] Lỗi xử lý phản hồi từ Native:', err);
-    }
-  }
-};
-
-window.onNativeResponse = function (jsonString) {
-  Bridge.handleNativeResponse(jsonString);
-};
+})();

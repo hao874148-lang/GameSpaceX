@@ -4,94 +4,161 @@ import android.os.Handler
 import android.os.Looper
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
+import com.gamespace.core.CommandRegistry
+import com.gamespace.core.ShellExecutor
+import com.gamespace.core.ShizukuManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONObject
-import java.lang.ref.WeakReference
 
 /**
- * Cầu nối chính giữa WebView JavaScript và Native Kotlin code
+ * Cầu nối giao tiếp giữa WebView và Kotlin Native.
  */
-class WebAppBridge(webView: WebView) {
-
-    private val webViewRef = WeakReference(webView)
+class WebAppBridge(
+    private val webView: WebView,
+    private val coroutineScope: CoroutineScope
+) {
     private val mainHandler = Handler(Looper.getMainLooper())
 
     @JavascriptInterface
-    fun postMessage(jsonString: String) {
-        try {
-            val request = BridgeRequest.parse(jsonString)
-            handleRequest(request)
-        } catch (e: Exception) {
-            val errorResponse = BridgeResponse(
-                requestId = "error",
-                action = "ERROR",
-                success = false,
-                message = "Lỗi xử lý JSON: ${e.localizedMessage}"
-            )
-            sendResponseToWeb(errorResponse)
-        }
-    }
-
-    private fun handleRequest(request: BridgeRequest) {
-        when (request.action) {
-            "SET_PERFORMANCE_MODE" -> {
-                val requestedMode = request.payload.optString("mode", "HIGH_PERFORMANCE")
-                
-                val responseData = JSONObject().apply {
-                    put("currentMode", requestedMode)
-                    put("cpuUsage", "85%")
-                    put("gpuFreq", "670 MHz")
-                    put("temperature", 38.2)
-                    put("shizukuStatus", "READY")
-                    put("memoryStatus", "OPTIMIZED")
+    fun executeAction(action: String, payloadJson: String) {
+        coroutineScope.launch(Dispatchers.Default) {
+            try {
+                val payload = if (payloadJson.isNotEmpty()) JSONObject(payloadJson) else JSONObject()
+                when (action) {
+                    BridgeEvents.INIT_STATE.eventName -> handleInitState()
+                    BridgeEvents.SET_PERFORMANCE_MODE.eventName -> handleSetPerformanceMode(payload)
+                    BridgeEvents.REQUEST_SHIZUKU_PERMISSION.eventName -> handleRequestShizukuPermission()
+                    BridgeEvents.CLEAN_MEMORY.eventName -> handleCleanMemory()
+                    BridgeEvents.GET_SYSTEM_STATS.eventName -> handleGetSystemStats()
+                    else -> sendToWeb("ON_ERROR", JSONObject().apply {
+                        put("message", "Hành động $action không được hỗ trợ!")
+                    })
                 }
-                
-                val response = BridgeResponse(
-                    requestId = request.requestId,
-                    action = request.action,
-                    success = true,
-                    message = "Đã chuyển sang chế độ: $requestedMode",
-                    data = responseData
-                )
-                sendResponseToWeb(response)
-            }
-
-            "GET_SYSTEM_STATUS" -> {
-                val statusData = JSONObject().apply {
-                    put("mode", "BALANCED")
-                    put("shizukuStatus", "READY")
-                    put("memoryStatus", "OPTIMIZED")
-                    put("temperature", 36.5)
-                    put("batteryLevel", 88)
-                }
-
-                val response = BridgeResponse(
-                    requestId = request.requestId,
-                    action = request.action,
-                    success = true,
-                    message = "Trạng thái hệ thống đã cập nhật",
-                    data = statusData
-                )
-                sendResponseToWeb(response)
-            }
-
-            else -> {
-                val response = BridgeResponse(
-                    requestId = request.requestId,
-                    action = request.action,
-                    success = false,
-                    message = "Hành động không xác định: ${request.action}"
-                )
-                sendResponseToWeb(response)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                sendToWeb("ON_ERROR", JSONObject().apply {
+                    put("message", e.message ?: "Lỗi không xác định tại WebAppBridge")
+                })
             }
         }
     }
 
-    fun sendResponseToWeb(response: BridgeResponse) {
+    private fun handleInitState() {
+        val isShizukuAvailable = ShizukuManager.isShizukuAvailable()
+        val hasPermission = ShizukuManager.hasShizukuPermission()
+
+        val response = JSONObject().apply {
+            put("shizukuAvailable", isShizukuAvailable)
+            put("shizukuPermission", hasPermission)
+            put("shizukuStatus", if (hasPermission) "READY" else if (isShizukuAvailable) "NEED_PERMISSION" else "DISCONNECTED")
+            put("performanceMode", false)
+            put("memoryStatus", "OPTIMIZED")
+            put("temperature", 36.5)
+        }
+        sendToWeb("ON_STATE_UPDATED", response)
+    }
+
+    private fun handleRequestShizukuPermission() {
+        if (!ShizukuManager.isShizukuAvailable()) {
+            sendToWeb("ON_SHIZUKU_STATUS", JSONObject().apply {
+                put("status", "DISCONNECTED")
+                put("message", "Dịch vụ Shizuku chưa khởi chạy!")
+            })
+            return
+        }
+
+        if (ShizukuManager.hasShizukuPermission()) {
+            sendToWeb("ON_SHIZUKU_STATUS", JSONObject().apply {
+                put("status", "READY")
+                put("message", "Đã có quyền Shizuku!")
+            })
+            return
+        }
+
         mainHandler.post {
-            val jsonStr = response.toJsonString()
-            val escapedJson = jsonStr.replace("\\", "\\\\").replace("'", "\\'")
-            val jsCode = "if (window.onNativeResponse) { window.onNativeResponse('$escapedJson'); }"
-            webViewRef.get()?.evaluateJavascript(jsCode, null)
+            ShizukuManager.requestPermission()
+        }
+    }
+
+    private suspend fun handleSetPerformanceMode(payload: JSONObject) {
+        val enable = payload.optBoolean("enable", false)
+        val hasShizuku = ShizukuManager.hasShizukuPermission()
+
+        if (hasShizuku) {
+            val commands = if (enable) CommandRegistry.PERFORMANCE_MODE_ON else CommandRegistry.PERFORMANCE_MODE_OFF
+            val results = ShellExecutor.executeCommands(commands)
+            val success = results.all { it.isSuccess }
+
+            sendToWeb("ON_PERFORMANCE_MODE_CHANGED", JSONObject().apply {
+                put("enabled", enable)
+                put("isMock", false)
+                put("success", success)
+                put("message", if (enable) "Đã BẬT Hiệu năng cao qua Shizuku ADB Shell!" else "Đã TẮT Chế độ Hiệu năng cao!")
+            })
+        } else {
+            // Mock data fallback khi chưa cấp quyền Shizuku
+            sendToWeb("ON_PERFORMANCE_MODE_CHANGED", JSONObject().apply {
+                put("enabled", enable)
+                put("isMock", true)
+                put("success", true)
+                put("message", if (enable) "Đã BẬT Chế độ Hiệu năng cao (Giả lập Mock)" else "Đã TẮT Chế độ Hiệu năng cao (Giả lập Mock)")
+            })
+        }
+    }
+
+    private suspend fun handleCleanMemory() {
+        val hasShizuku = ShizukuManager.hasShizukuPermission()
+        if (hasShizuku) {
+            ShellExecutor.executeCommands(CommandRegistry.CLEAN_RAM)
+            sendToWeb("ON_MEMORY_CLEANED", JSONObject().apply {
+                put("success", true)
+                put("isMock", false)
+                put("message", "Đã giải phóng bộ nhớ RAM bằng ADB Shell!")
+            })
+        } else {
+            sendToWeb("ON_MEMORY_CLEANED", JSONObject().apply {
+                put("success", true)
+                put("isMock", true)
+                put("message", "Đã dọn dẹp bộ nhớ RAM (Giả lập Mock)!")
+            })
+        }
+    }
+
+    private suspend fun handleGetSystemStats() {
+        var tempVal = 37.2
+        val hasShizuku = ShizukuManager.hasShizukuPermission()
+
+        if (hasShizuku) {
+            val res = ShellExecutor.executeCommand(CommandRegistry.GET_CPU_TEMP)
+            if (res.isSuccess && res.stdout.isNotEmpty()) {
+                try {
+                    val raw = res.stdout.trim().toDouble()
+                    tempVal = if (raw > 1000) raw / 1000.0 else raw
+                } catch (_: Exception) {}
+            }
+        }
+
+        sendToWeb("ON_SYSTEM_STATS", JSONObject().apply {
+            put("temperature", tempVal)
+            put("shizukuReady", hasShizuku)
+        })
+    }
+
+    fun notifyShizukuState(isAvailable: Boolean, hasPermission: Boolean) {
+        val response = JSONObject().apply {
+            put("shizukuAvailable", isAvailable)
+            put("shizukuPermission", hasPermission)
+            put("shizukuStatus", if (hasPermission) "READY" else if (isAvailable) "NEED_PERMISSION" else "DISCONNECTED")
+        }
+        sendToWeb("ON_SHIZUKU_STATUS", response)
+    }
+
+    private fun sendToWeb(event: String, data: JSONObject) {
+        val jsCall = "javascript:window.GameSpaceBridge.onNativeEvent('$event', ${data})"
+        mainHandler.post {
+            webView.evaluateJavascript(jsCall, null)
         }
     }
 }

@@ -1,98 +1,129 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const btnTogglePerformance = document.getElementById('btn-performance');
-  const txtMode = document.getElementById('txt-mode');
-  const txtShizuku = document.getElementById('txt-shizuku');
-  const txtMemory = document.getElementById('txt-memory');
-  const txtTemp = document.getElementById('txt-temp');
+/**
+ * Logic điều khiển giao diện UI chính.
+ */
+document.addEventListener("DOMContentLoaded", function() {
+    const bridge = window.GameSpaceBridge;
+    const gameState = window.GameState;
 
-  fetchSystemStatus();
+    // DOM Elements
+    const shizukuBadge = document.getElementById("shizuku-badge");
+    const shizukuDetail = document.getElementById("shizuku-detail");
+    const btnRequestShizuku = document.getElementById("btn-request-shizuku");
+    const togglePerformance = document.getElementById("toggle-performance");
+    const modeText = document.getElementById("mode-text");
+    const tempValue = document.getElementById("temp-value");
+    const tempBar = document.getElementById("temp-bar");
+    const ramStatus = document.getElementById("ram-status");
+    const btnCleanRam = document.getElementById("btn-clean-ram");
+    const logConsole = document.getElementById("log-console");
+    const btnClearLogs = document.getElementById("btn-clear-logs");
 
-  if (btnTogglePerformance) {
-    btnTogglePerformance.addEventListener('click', () => {
-      const nextMode = AppState.isHighPerformance ? 'BALANCED' : 'HIGH_PERFORMANCE';
+    // Đăng ký sự kiện từ Native Bridge
+    bridge.registerListener("ON_STATE_UPDATED", function(data) {
+        gameState.setState(data);
+        gameState.addLog("Đã cập nhật trạng thái hệ thống.", "info");
+    });
 
-      btnTogglePerformance.disabled = true;
-      btnTogglePerformance.style.opacity = '0.7';
-
-      Bridge.executeAction('SET_PERFORMANCE_MODE', { mode: nextMode }, (response) => {
-        btnTogglePerformance.disabled = false;
-        btnTogglePerformance.style.opacity = '1';
-
-        if (response && response.success) {
-          AppState.updateFromNative(response.data);
-          updateUI();
-          showNotification(response.message);
-        } else {
-          showNotification('Lỗi: ' + (response ? response.message : 'Kết nối thất bại'));
+    bridge.registerListener("ON_SHIZUKU_STATUS", function(data) {
+        gameState.setState({
+            shizukuStatus: data.shizukuStatus,
+            shizukuAvailable: data.shizukuAvailable,
+            shizukuPermission: data.shizukuPermission
+        });
+        if (data.message) {
+            gameState.addLog(data.message, data.shizukuPermission ? "success" : "warning");
         }
-      });
     });
-  }
 
-  function fetchSystemStatus() {
-    Bridge.executeAction('GET_SYSTEM_STATUS', {}, (response) => {
-      if (response && response.success) {
-        AppState.updateFromNative(response.data);
-        updateUI();
-      }
+    bridge.registerListener("ON_PERFORMANCE_MODE_CHANGED", function(data) {
+        gameState.setState({ performanceMode: data.enabled });
+        gameState.addLog(data.message, data.success ? "success" : "error");
     });
-  }
 
-  function updateUI() {
-    if (txtMode) {
-      txtMode.textContent = AppState.mode;
-      txtMode.style.color = AppState.isHighPerformance ? '#ff0055' : '#00f2fe';
-    }
+    bridge.registerListener("ON_MEMORY_CLEANED", function(data) {
+        ramStatus.innerText = "OPTIMIZED";
+        gameState.addLog(data.message, "success");
+    });
 
-    if (txtShizuku) {
-      txtShizuku.textContent = AppState.shizukuStatus;
-    }
+    bridge.registerListener("ON_SYSTEM_STATS", function(data) {
+        if (data.temperature) {
+            gameState.setState({ temperature: data.temperature });
+        }
+    });
 
-    if (txtMemory) {
-      txtMemory.textContent = AppState.memoryStatus;
-    }
+    bridge.registerListener("ON_ERROR", function(data) {
+        gameState.addLog("Lỗi: " + data.message, "error");
+    });
 
-    if (txtTemp) {
-      txtTemp.textContent = typeof AppState.temperature === 'number' 
-        ? `${AppState.temperature.toFixed(1)} °C` 
-        : AppState.temperature;
-    }
+    // Lắng nghe State thay đổi để cập nhật UI
+    gameState.subscribe(function(state) {
+        // Cập nhật Badge Shizuku
+        if (state.shizukuPermission) {
+            shizukuBadge.className = "badge ready";
+            shizukuBadge.innerText = "READY";
+            shizukuDetail.innerText = "Đã kết nối và sẵn sàng thực thi ADB Shell.";
+        } else if (state.shizukuAvailable) {
+            shizukuBadge.className = "badge warning";
+            shizukuBadge.innerText = "CHƯA CẤP QUYỀN";
+            shizukuDetail.innerText = "Dịch vụ đang chạy, cần cấp quyền ứng dụng.";
+        } else {
+            shizukuBadge.className = "badge danger";
+            shizukuBadge.innerText = "NGẮT KẾT NỐI";
+            shizukuDetail.innerText = "Chưa bật Shizuku trên thiết bị.";
+        }
 
-    if (btnTogglePerformance) {
-      if (AppState.isHighPerformance) {
-        btnTogglePerformance.textContent = 'TẮT CHẾ ĐỘ HIỆU NĂNG CAO';
-        btnTogglePerformance.classList.add('active');
-      } else {
-        btnTogglePerformance.textContent = 'BẬT CHẾ ĐỘ HIỆU NĂNG CAO';
-        btnTogglePerformance.classList.remove('active');
-      }
-    }
-  }
+        // Cập nhật Mode Performance
+        togglePerformance.checked = state.performanceMode;
+        if (state.performanceMode) {
+            modeText.innerText = "HIGH_PERFORMANCE";
+            modeText.style.color = "var(--color-accent-red)";
+        } else {
+            modeText.innerText = "BALANCED";
+            modeText.style.color = "var(--color-accent-cyan)";
+        }
 
-  function showNotification(msg) {
-    let toast = document.getElementById('toast-notification');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.id = 'toast-notification';
-      toast.style.position = 'fixed';
-      toast.style.bottom = '20px';
-      toast.style.left = '50%';
-      toast.style.transform = 'translateX(-50%)';
-      toast.style.background = 'rgba(0, 0, 0, 0.85)';
-      toast.style.color = '#00ff88';
-      toast.style.border = '1px solid #00ff88';
-      toast.style.padding = '10px 20px';
-      toast.style.borderRadius = '20px';
-      toast.style.fontSize = '12px';
-      toast.style.zIndex = '9999';
-      toast.style.boxShadow = '0 0 10px rgba(0, 255, 136, 0.5)';
-      toast.style.transition = 'opacity 0.3s ease';
-      document.body.appendChild(toast);
-    }
-    toast.textContent = msg;
-    toast.style.opacity = '1';
-    setTimeout(() => {
-      toast.style.opacity = '0';
-    }, 2500);
-  }
+        // Cập nhật Nhiệt độ
+        const temp = parseFloat(state.temperature).toFixed(1);
+        tempValue.innerText = temp + " °C";
+        const tempPercent = Math.min(Math.max((temp - 20) * 2.5, 10), 100);
+        tempBar.style.width = tempPercent + "%";
+
+        // Cập nhật Console Logs
+        logConsole.innerHTML = "";
+        state.logs.forEach(function(item) {
+            const div = document.createElement("div");
+            div.className = "log-item " + item.type;
+            div.innerText = "[" + item.timestamp + "] " + item.message;
+            logConsole.appendChild(div);
+        });
+        logConsole.scrollTop = logConsole.scrollHeight;
+    });
+
+    // Gán Sự kiện Click Buttons
+    btnRequestShizuku.addEventListener("click", function() {
+        bridge.executeAction("REQUEST_SHIZUKU_PERMISSION");
+    });
+
+    togglePerformance.addEventListener("change", function(e) {
+        bridge.executeAction("SET_PERFORMANCE_MODE", { enable: e.target.checked });
+    });
+
+    btnCleanRam.addEventListener("click", function() {
+        ramStatus.innerText = "CLEANING...";
+        bridge.executeAction("CLEAN_MEMORY");
+    });
+
+    btnClearLogs.addEventListener("click", function() {
+        gameState.setState({ logs: [] });
+    });
+
+    // Gọi lấy dữ liệu khởi tạo ban đầu
+    setTimeout(function() {
+        bridge.executeAction("INIT_STATE");
+    }, 200);
+
+    // Chu kỳ cập nhật chỉ số hệ thống định kỳ (mỗi 5s)
+    setInterval(function() {
+        bridge.executeAction("GET_SYSTEM_STATS");
+    }, 5000);
 });

@@ -1,44 +1,12 @@
 package com.gamespace.bridge
 
-import org.json.JSONObject
-
 /**
- * Cấu trúc dữ liệu yêu cầu từ JavaScript gửi sang Native
+ * Khai báo tên các Event giữa JavaScript và Kotlin Bridge.
  */
-data class BridgeRequest(
-    val requestId: String,
-    val action: String,
-    val payload: JSONObject
-) {
-    companion object {
-        fun parse(jsonStr: String): BridgeRequest {
-            val json = JSONObject(jsonStr)
-            return BridgeRequest(
-                requestId = json.optString("requestId", System.currentTimeMillis().toString()),
-                action = json.optString("action", "UNKNOWN"),
-                payload = json.optJSONObject("payload") ?: JSONObject()
-            )
-        }
-    }
-}
-
-/**
- * Cấu trúc dữ liệu phản hồi từ Native trả về lại JavaScript
- */
-data class BridgeResponse(
-    val requestId: String,
-    val action: String,
-    val success: Boolean,
-    val message: String,
-    val data: JSONObject = JSONObject()
-) {
-    fun toJsonString(): String {
-        val json = JSONObject()
-        json.put("requestId", requestId)
-        json.put("action", action)
-        json.put("success", success)
-        json.put("message", message)
-        json.put("data", data)
-        return json.toString()
-    }
+enum class BridgeEvents(val eventName: String) {
+    INIT_STATE("INIT_STATE"),
+    SET_PERFORMANCE_MODE("SET_PERFORMANCE_MODE"),
+    REQUEST_SHIZUKU_PERMISSION("REQUEST_SHIZUKU_PERMISSION"),
+    GET_SYSTEM_STATS("GET_SYSTEM_STATS"),
+    CLEAN_MEMORY("CLEAN_MEMORY")
 }
