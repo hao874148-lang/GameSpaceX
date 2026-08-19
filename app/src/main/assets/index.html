@@ -3,38 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GameSpaceX Control Center</title>
+  <title>GameSpaceX</title>
   <link rel="stylesheet" href="css/core.css">
   <link rel="stylesheet" href="css/theme.css">
 </head>
 <body>
-
-  <div class="cyber-container">
-    <header class="cyber-header">
-      <div class="brand-title">GAME SPACEX</div>
-      <div class="status-badge">ONLINE</div>
+  <div class="app-container">
+    <header class="header">
+      <div class="title-group">
+        <h1 class="logo-text">GAME <span class="highlight">SPACEX</span></h1>
+      </div>
+      <div class="status-badge online">ONLINE</div>
     </header>
 
-    <div class="card-grid">
-      <div class="cyber-card">
-        <span class="card-label">CHẾ ĐỘ</span>
-        <span class="card-value" id="modeStatus">BALANCED</span>
+    <main class="content">
+      <div class="grid-container">
+        <div class="card">
+          <span class="card-label">CHẾ ĐỘ</span>
+          <span class="card-value cyan" id="txt-mode">BALANCED</span>
+        </div>
+        <div class="card">
+          <span class="card-label">SHIZUKU</span>
+          <span class="card-value green" id="txt-shizuku">SẴN SÀNG</span>
+        </div>
+        <div class="card">
+          <span class="card-label">BỘ NHỚ</span>
+          <span class="card-value cyan" id="txt-memory">OPTIMIZED</span>
+        </div>
+        <div class="card">
+          <span class="card-label">NHIỆT ĐỘ</span>
+          <span class="card-value cyan" id="txt-temp">36.5 °C</span>
+        </div>
       </div>
-      <div class="cyber-card">
-        <span class="card-label">SHIZUKU</span>
-        <span class="card-value" style="color: var(--accent-green);">SẴN SÀNG</span>
-      </div>
-      <div class="cyber-card">
-        <span class="card-label">BỘ NHỚ</span>
-        <span class="card-value">OPTIMIZED</span>
-      </div>
-      <div class="cyber-card">
-        <span class="card-label">NHIỆT ĐỘ</span>
-        <span class="card-value" style="color: var(--accent-cyan);">36.5 °C</span>
-      </div>
-    </div>
 
-    <button id="boostBtn" class="cyber-button">BẬT CHẾ ĐỘ HIỆU NĂNG CAO</button>
+      <div class="action-section">
+        <button id="btn-performance" class="btn-primary">
+          BẬT CHẾ ĐỘ HIỆU NĂNG CAO
+        </button>
+      </div>
+    </main>
   </div>
 
   <script src="js/bridge.js"></script>
