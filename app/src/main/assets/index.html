@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameSpaceX</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 { color: #BB86FC; }
+        button {
+            background-color: #BB86FC;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        #status { margin-top: 20px; font-size: 14px; color: #03DAC6; }
+    </style>
+</head>
+<body>
+    <h1>GameSpaceX</h1>
+    <p>Giao diện Web cơ bản đã chạy.</p>
+    <button onclick="checkShizuku()">Kiểm tra Shizuku</button>
+    <div id="status">Đang chờ trạng thái Shizuku...</div>
+
+    <script>
+        // Hàm này sẽ được Android gọi tự động khi có cập nhật trạng thái
+        window.onShizukuState = function(isAvailable, hasPermission) {
+            const statusDiv = document.getElementById('status');
+            if (!isAvailable) {
+                statusDiv.innerText = "Shizuku chưa chạy.";
+            } else if (!hasPermission) {
+                statusDiv.innerText = "Shizuku đang chạy nhưng chưa cấp quyền.";
+            } else {
+                statusDiv.innerText = "Shizuku đã sẵn sàng và có quyền!";
+            }
+        };
+
+        function checkShizuku() {
+            // Gọi hàm bridge từ Android (nếu có)
+            if (window.AndroidNativeBridge) {
+                // Có thể thêm các hàm gọi từ JS vào Android tại đây
+                statusDiv.innerText = "Đang kiểm tra lại...";
+            } else {
+                statusDiv.innerText = "Không tìm thấy AndroidNativeBridge.";
+            }
+        }
+    </script>
+</body>
+</html>
