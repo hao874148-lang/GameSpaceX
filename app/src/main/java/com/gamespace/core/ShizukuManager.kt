@@ -2,64 +2,104 @@ package com.gamespace.core
 
 import android.content.pm.PackageManager
 import rikka.shizuku.Shizuku
+import java.util.concurrent.CopyOnWriteArrayList
 
 object ShizukuManager {
+    const val SHIZUKU_REQ_CODE = 1001
 
     interface StateListener {
         fun onShizukuStateChanged(isAvailable: Boolean, hasPermission: Boolean)
     }
 
-    private val listeners = mutableListOf<StateListener>()
-    
-    private val binderReceivedListener = Shizuku.OnBinderReceivedListener {
-        notifyListeners()
-    }
-    
-    private val requestPermissionResultListener = Shizuku.OnRequestPermissionResultListener { _, _ ->
-        notifyListeners()
+    private val listeners = CopyOnWriteArrayList<StateListener>()
+
+    private val binderReceivedListener = Shizuku.OnBinderReceivedListener { notifyListeners() }
+    private val binderDeadListener = Shizuku.OnBinderDeadListener { notifyListeners() }
+    private val permissionResultListener = Shizuku.OnRequestPermissionResultListener { requestCode, _ ->
+        if (requestCode == SHIZUKU_REQ_CODE) notifyListeners()
     }
 
+    private var isInitialized = false
+
     fun init() {
-        Shizuku.addBinderReceivedListenerSticky(binderReceivedListener)
-        Shizuku.addRequestPermissionResultListener(requestPermissionResultListener)
+        if (isInitialized) return
+        try {
+            Shizuku.addBinderReceivedListenerSticky(binderReceivedListener)
+            Shizuku.addBinderDeadListener(binderDeadListener)
+            Shizuku.addRequestPermissionResultListener(permissionResultListener)
+            isInitialized = true
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
+    }
+
+    fun destroy() {
+        if (!isInitialized) return
+        try {
+            Shizuku.removeBinderReceivedListener(binderReceivedListener)
+            Shizuku.removeBinderDeadListener(binderDeadListener)
+            Shizuku.removeRequestPermissionResultListener(permissionResultListener)
+            isInitialized = false
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
+    }
+
+    fun addListener(listener: StateListener) {
+        try {
+            if (!isteners.contains(listener)) listeners.add(listener)
+            listener.onShizukuStateChanged(isShizukuAvailable(), hasShizukuPermission())
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
+    }
+
+    fun removeListener(listener: StateListener) {
+        try {
+            listeners.remove(listener)
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
     }
 
     fun isShizukuAvailable(): Boolean {
         return try {
             Shizuku.pingBinder()
-        } catch (e: Throwable) {
+        } catch (t: Throwable) {
             false
         }
     }
 
     fun hasShizukuPermission(): Boolean {
-        return if (isShizukuAvailable()) {
-            try {
-                Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
-            } catch (e: Throwable) {
-                false
-            }
-        } else {
+        if (!isShizukuAvailable()) return false
+        return try {
+            if (Shizuku.isPreV11()) false
+            else Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+        } catch (t: Throwable) {
             false
         }
     }
 
-    fun addListener(listener: StateListener) {
-        listeners.add(listener)
-    }
-
-    fun removeListener(listener: StateListener) {
-        listeners.remove(listener)
+    fun requestPermission() {
+        if (!isShizukuAvailable()) return
+        try {
+            if (!Shizuku.isPreV11() && !hasShizukuPermission()) {
+                Shizuku.requestPermission(SHIZUKU_REQ_CODE)
+            }
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
     }
 
     private fun notifyListeners() {
         val available = isShizukuAvailable()
         val permitted = hasShizukuPermission()
-        listeners.forEach { it.onShizukuStateChanged(available, permitted) }
-    }
-
-    fun destroy() {
-        Shizuku.removeBinderReceivedListener(binderReceivedListener)
-        Shizuku.removeRequestPermissionResultListener(requestPermissionResultListener)
+        for (listener in listeners) {
+            try {
+                listener.onShizukuStateChanged(available, permitted)
+            } catch (t: Throwable) {
+                t.printStackTrace()
+            }
+        }
     }
 }

@@ -28,7 +28,9 @@ class MainActivity : AppCompatActivity(), ShizukuManager.StateListener {
             domStorageEnabled = true
             allowFileAccess = true
             allowContentAccess = true
+            @Suppress("DEPRECATION")
             allowFileAccessFromFileURLs = true
+            @Suppress("DEPRECATION")
             allowUniversalAccessFromFileURLs = true
             cacheMode = WebSettings.LOAD_NO_CACHE
         }
@@ -37,10 +39,10 @@ class MainActivity : AppCompatActivity(), ShizukuManager.StateListener {
 
         val bridge = WebAppBridge(webView, lifecycleScope)
         webAppBridge = bridge
-        webView.addJavascriptInterface(bridge, "AndroidNativeBridge")
+        webView.addJavaScriptInterface(bridge, "AndroidNativeBridge")
 
         webView.webViewClient = object : WebViewClient() {
-            override fun onPageFinished(view: WebView?, url: String?) {
+            override fun olPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 notifyShizukuState()
             }
@@ -61,7 +63,7 @@ class MainActivity : AppCompatActivity(), ShizukuManager.StateListener {
         notifyShizukuState()
     }
 
-    override fun OnShizukuStateChanged(isAvailable: Boolean, hasPermission: Boolean) {
+    override fun onShizukuStateChanged(isAvailable: Boolean, hasPermission: Boolean) {
         runOnUiThread {
             notifyShizukuState()
         }
