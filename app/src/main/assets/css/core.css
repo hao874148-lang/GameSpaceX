@@ -1,0 +1,30 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+:root {
+    --bg-primary: #0a0d14;
+    --bg-card: rgba(18, 24, 38, 0.9);
+    --bg-card-border: rgba(0, 240, 255, 0.25);
+    --color-accent-red: #ff003c;
+    --color-accent-cyan: #00f0ff;
+    --color-accent-green: #00ff66;
+    --color-accent-yellow: #ffcc00;
+    --text-primary: #ffffff;
+    --text-secondary: #8a99ad;
+    --radius-sm: 6px;
+    --radius-md: 12px;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    width: 100vw;
+    min-height: 100vh;
+}

@@ -2,62 +2,87 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GameSpaceX</title>
-    <style>
-        body {
-            background-color: #121212;
-            color: #ffffff;
-            font-family: sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        h1 { color: #BB86FC; }
-        button {
-            background-color: #BB86FC;
-            color: #000;
-            border: none;
-            padding: 15px 30px;
-            font-size: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        #status { margin-top: 20px; font-size: 14px; color: #03DAC6; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GameSpaceX Cyber Panel</title>
+    <link rel="stylesheet" href="css/core.css">
+    <link rel="stylesheet" href="css/theme.css">
 </head>
 <body>
-    <h1>GameSpaceX</h1>
-    <p>Giao diện Web cơ bản đã chạy.</p>
-    <button onclick="checkShizuku()">Kiểm tra Shizuku</button>
-    <div id="status">Đang chờ trạng thái Shizuku...</div>
+    <div class="app-container">
+        <header class="cyber-header">
+            <div class="logo-box">
+                <span class="logo-text">GAME SPACEX</span>
+                <span class="version-tag">v1.0-DAY06</span>
+            </div>
+            <div class="connection-status">
+                <span class="status-dot"></span>
+                <span>ONLINE</span>
+            </div>
+        </header>
 
-    <script>
-        // Hàm này sẽ được Android gọi tự động khi có cập nhật trạng thái
-        window.onShizukuState = function(isAvailable, hasPermission) {
-            const statusDiv = document.getElementById('status');
-            if (!isAvailable) {
-                statusDiv.innerText = "Shizuku chưa chạy.";
-            } else if (!hasPermission) {
-                statusDiv.innerText = "Shizuku đang chạy nhưng chưa cấp quyền.";
-            } else {
-                statusDiv.innerText = "Shizuku đã sẵn sàng và có quyền!";
-            }
-        };
+        <main class="dashboard-content">
+            <section class="cyber-card highlight-card">
+                <div class="card-header">
+                    <span class="card-title">TRẠNG THÁI SHIZUKU</span>
+                    <span class="badge" id="shizuku-badge">KIỂM TRA...</span>
+                </div>
+                <div class="card-body">
+                    <div class="status-info-row">
+                        <span id="shizuku-detail">Đang quét Binder...</span>
+                    </div>
+                    <button class="cyber-btn btn-secondary" id="btn-request-shizuku">CẤP QUYỀN SHIZUKU</button>
+                </div>
+            </section>
 
-        function checkShizuku() {
-            // Gọi hàm bridge từ Android (nếu có)
-            if (window.AndroidNativeBridge) {
-                // Có thể thêm các hàm gọi từ JS vào Android tại đây
-                statusDiv.innerText = "Đang kiểm tra lại...";
-            } else {
-                statusDiv.innerText = "Không tìm thấy AndroidNativeBridge.";
-            }
-        }
-    </script>
+            <section class="cyber-card">
+                <div class="card-header">
+                    <span class="card-title">HIỆU NĂNG HỆ THỐNG</span>
+                    <span class="mode-indicator" id="mode-text">BALANCED</span>
+                </div>
+                <div class="card-body">
+                    <div class="toggle-container">
+                        <div class="toggle-info">
+                            <strong>Chế độ Chơi Game Cực Hạn</strong>
+                            <p>Tối ưu CPU Governor, vô hiệu hóa throttling</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-performance">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <section class="cyber-card-grid">
+                <div class="cyber-card mini-card">
+                    <span class="mini-title">NHIỆT ĐỘ CPU</span>
+                    <div class="metric-value" id="temp-value">36.5 °C</div>
+                    <div class="metric-bar-bg">
+                        <div class="metric-bar-fill" id="temp-bar" style="width: 45%;"></div>
+                    </div>
+                </div>
+
+                <div class="cyber-card mini-card">
+                    <span class="mini-title">BỘ NHỚ RAM</span>
+                    <div class="metric-value" id="ram-status">OPTIMIZED</div>
+                    <button class="cyber-btn btn-action" id="btn-clean-ram">DỌN RAM</button>
+                </div>
+            </section>
+
+            <section class="cyber-card log-card">
+                <div class="card-header">
+                    <span class="card-title">NHẬT KÝ HỆ THỐNG</span>
+                    <button class="btn-text" id="btn-clear-logs">XÓA</button>
+                </div>
+                <div class="log-console" id="log-console">
+                    <div class="log-item info">[SYS] Giao diện RedMagic Cyber đã nạp.</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/bridge.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
