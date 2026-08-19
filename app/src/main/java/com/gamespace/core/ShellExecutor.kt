@@ -25,13 +25,21 @@ object ShellExecutor {
             }
 
             try {
-                val env: Array<String>? = null
-                val dir: String? = null
-                val process = Shizuku.newProcess(
-                    arrayOf("sh", "-c", command),
-                    env,
-                    dir
+                // Dùng Reflection để truy cập phương thức newProcess bị ẩn
+                val method = Shizuku::class.java.getDeclaredMethod(
+                    "newProcess",
+                    Array<String>::class.java,
+                    Array<String>::class.java,
+                    String::class.java
                 )
+                method.isAccessible = true
+                
+                val process = method.invoke(
+                    null,
+                    arrayOf("sh", "-c", command),
+                    null,
+                    null
+                ) as Process
 
                 val reader = BufferedReader(InputStreamReader(process.inputStream))
                 val errorReader = BufferedReader(InputStreamReader(process.errorStream))
